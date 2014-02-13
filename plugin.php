@@ -19,6 +19,8 @@ class SimpleURLs {
 		add_action( 'admin_menu', array( &$this, 'add_meta_box' ) );
 		add_action( 'save_post', array( &$this, 'meta_box_save' ), 1, 2 );
 		add_action( 'template_redirect', array( &$this, 'count_and_redirect' ) );
+		add_filter( 'manage_edit-surl_sortable_columns', array( &$this, 'columns_sort' ) );
+		add_action( 'pre_get_posts', array( &$this, 'columns_orderby' ) );
 	}
 	
 	// PHP4 Constructor
@@ -159,6 +161,22 @@ class SimpleURLs {
 		
 	}
 	
+	function columns_sort( $columns ) {
+		$columns['clicks'] = 'clicks';
+		return $columns;
+	}
+	
+	function columns_orderby( $query ) {
+		if( !is_admin() )
+			return;
+	
+		$orderby = $query->get( 'orderby');
+	
+		if( $orderby == 'clicks' ) {
+			$query->set( 'meta_key','_surl_count' );
+			$query->set( 'orderby','meta_value_num' );
+		}
+	}
 }
 
 $SimpleURLs = new SimpleURLs;
